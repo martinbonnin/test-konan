@@ -31,9 +31,14 @@ tasks.all {
         doLast {
             this as KotlinNativeCompile
 
-            val sha1 = libraries.files.filter { it.name == "org.jetbrains.kotlin.native.platform.CoreFoundation" }.single().walk().filter {
+            val coreFoundationDir = libraries.files.filter { it.name == "org.jetbrains.kotlin.native.platform.CoreFoundation" }.single()
+            println("Computing sha1 for all files in ${coreFoundationDir}")
+
+            val sha1 = coreFoundationDir.walk().filter {
                 it.isFile
-            }.sortedBy { it.path }.map {
+            }.sortedBy {
+                it.relativeTo(coreFoundationDir).path
+            }.map {
                 it.source().buffer().readByteString().sha1().hex()
             }.joinToString("").let {
                 Buffer().writeUtf8(it).sha1().hex()
